@@ -23,15 +23,15 @@ import (
 )
 
 func main() {
-	var doMigrate string
-	flag.StringVar(&doMigrate, "db", "", "Execute auto migration on run.")
+	doMigrate := flag.String("db", "", "Execute auto migration on run.")
+	flag.Parse()
 	// Config load and Init logger.
 	conf := config.Load()
 
 	// Init infra engines.
 	logger := lib.NewLogger(conf, log.Default())
 	db := database.Connect(conf.Database)
-	if doMigrate == "migrate" {
+	if doMigrate != nil && *doMigrate == "migrate" {
 		if err := database.Migrate(db); err != nil {
 			log.Panicf("failed to migrate: %v", err)
 		}
