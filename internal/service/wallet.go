@@ -74,8 +74,8 @@ func (svc *walletSvc) ConfirmTx(ctx context.Context, tx string) (*dto.ConfirmRes
 	event := "Confirm Transaction"
 
 	var (
-		result *dto.ConfirmResult
-		err    error
+		result     *dto.ConfirmResult
+		expiredErr error
 	)
 	if err := svc.txManager.WithinTransaction(ctx, func(ctx context.Context) error {
 		tTxRepo := svc.txRepo.WithTx(svc.txManager.GetTx(ctx))
@@ -99,7 +99,8 @@ func (svc *walletSvc) ConfirmTx(ctx context.Context, tx string) (*dto.ConfirmRes
 				})
 				return err
 			}
-			err = errs.ErrTxExpired
+
+			expiredErr = errs.ErrTxExpired
 			return nil
 		}
 
@@ -131,12 +132,16 @@ func (svc *walletSvc) ConfirmTx(ctx context.Context, tx string) (*dto.ConfirmRes
 		return nil, err
 	}
 
+	if expiredErr != nil {
+		return nil, expiredErr
+	}
+
 	svc.logger.Info(ctx, lib.Meta{
 		Event: event,
 		Msg:   "Top up confirmed.",
 	})
 
-	return result, err
+	return result, nil
 }
 
 func validateStatus(tx entity.Transaction) error {
