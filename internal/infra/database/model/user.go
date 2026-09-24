@@ -6,12 +6,14 @@ import (
 )
 
 type User struct {
-	ID        uint   `gorm:"primaryKey"`
-	Username  string `gorm:"uniqueIndex"`
-	FirstName string
-	LastName  string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID           uint   `gorm:"primaryKey"`
+	Username     string `gorm:"uniqueIndex"`
+	FirstName    string
+	LastName     string
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+	Wallet       *Wallet       `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	Transactions []Transaction `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }
 
 func (u *User) ToEntity() *entity.User {

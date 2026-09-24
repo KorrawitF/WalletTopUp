@@ -12,7 +12,7 @@ const tenMinute = 10 * time.Minute
 
 type Transaction struct {
 	ID            string `gorm:"type:uuid;primaryKey"`
-	UserID        uint
+	UserID        uint   `gorm:"not null;index"`
 	Amount        float64
 	PaymentMethod string
 	Status        string
@@ -20,6 +20,7 @@ type Transaction struct {
 	CompletedAt   *time.Time
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
+	User          *User `gorm:"foreignKey:UserID"`
 }
 
 func (tx *Transaction) ToEntity() *entity.Transaction {

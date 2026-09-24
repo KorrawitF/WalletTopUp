@@ -6,11 +6,12 @@ import (
 )
 
 type Wallet struct {
-	ID        uint `gorm:"primaryKey"`
-	UserID    uint
-	Balance   float64
+	ID        uint    `gorm:"primaryKey"`
+	UserID    uint    `gorm:"not null;uniqueIndex"`
+	Balance   float64 `gorm:"not null;default:0"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
+	User      *User `gorm:"foreignKey:UserID"`
 }
 
 func (w *Wallet) ToEntity() *entity.Wallet {
