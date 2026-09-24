@@ -40,8 +40,10 @@ func main() {
 	// Dependencies injection.
 	txRepo := repository.NewTxRepo(logger, db)
 	userRepo := repository.NewUserRepo(logger, db)
+	txManager := repository.NewTxManager(db)
+	walletRepo := repository.NewWalletRepo(logger, db)
 
-	walletSvc := service.NewWalletSvc(logger, userRepo, txRepo)
+	walletSvc := service.NewWalletSvc(logger, userRepo, txRepo, txManager, walletRepo)
 
 	handler := handler.NewWalletHandler(logger, walletSvc)
 

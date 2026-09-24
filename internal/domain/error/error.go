@@ -17,6 +17,11 @@ func (e *Error) Error() string {
 var _ error = (*Error)(nil)
 
 var (
-	ErrInvalidMethod = &Error{Code: http.StatusBadRequest, Status: "fail", Message: "Invalid payment method."}
-	ErrUserNotFound  = &Error{Code: http.StatusBadRequest, Status: "fail", Message: "User not found."}
+	ErrInvalidMethod  = &Error{Code: http.StatusBadRequest, Status: "fail", Message: "Invalid payment method."}
+	ErrUserNotFound   = &Error{Code: http.StatusBadRequest, Status: "fail", Message: "User not found."}
+	ErrTxNotFound     = &Error{Code: http.StatusBadRequest, Status: "fail", Message: "Transaction not found."}
+	ErrTxCompleted    = &Error{Code: http.StatusBadRequest, Status: "fail", Message: "Transaction has been completed."}
+	ErrTxExpired      = &Error{Code: http.StatusBadRequest, Status: "fail", Message: "Transaction has been expired."}
+	ErrTxNotVerified  = &Error{Code: http.StatusBadRequest, Status: "fail", Message: "Transaction not verified."}
+	ErrWalletNotFound = &Error{Code: http.StatusBadRequest, Status: "fail", Message: "Wallet not found."}
 )

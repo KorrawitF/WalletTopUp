@@ -14,13 +14,11 @@ import (
 )
 
 type userRepo struct {
-	logger lib.Logger
-	db     *gorm.DB
+	db *gorm.DB
 }
 
 func NewUserRepo(logger lib.Logger, db *gorm.DB) repository.UserRepo {
 	return &userRepo{
-		logger,
 		db,
 	}
 }
@@ -31,17 +29,11 @@ func (repo *userRepo) Create(user entity.User) error {
 }
 
 func (repo *userRepo) FindById(ctx context.Context, id uint) (*entity.User, error) {
-	event := "Find User by ID"
 	var user model.User
 	if err := repo.db.WithContext(ctx).First(&user, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			err = errs.ErrUserNotFound
 		}
-		repo.logger.Error(ctx, lib.Meta{
-			Event: event,
-			Msg:   "failed to get user info.",
-			Error: err,
-		})
 		return nil, err
 	}
 	return user.ToEntity(), nil
