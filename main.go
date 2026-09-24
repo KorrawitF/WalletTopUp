@@ -71,14 +71,15 @@ func main() {
 	case <-ctx.Done():
 	}
 
+	event := "shuting down server"
+	logger.Info(ctx, lib.Meta{
+		Event: event,
+		Msg:   "shutdown signal received.",
+	})
+
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	event := "shuting down server"
-	logger.Info(shutdownCtx, lib.Meta{
-		Event: event,
-		Msg:   "http server is shutdown",
-	})
 	if err := srv.Shutdown(shutdownCtx); err != nil {
 		logger.Warn(shutdownCtx, lib.Meta{
 			Event: event,
