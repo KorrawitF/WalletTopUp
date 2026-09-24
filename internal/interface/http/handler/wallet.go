@@ -72,3 +72,49 @@ func (h *walletHandler) VerifyTx(c *gin.Context) {
 		ExpiresAt:     tx.ExpiresAt.Format(time.RFC3339),
 	})
 }
+
+func (h *walletHandler) ConfirmTx(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	var req request.Confirm
+	if err := c.BindJSON(&req); err != nil {
+		h.logger.Error(ctx, lib.Meta{
+			Event: "Confirm handler",
+			Msg:   "failed to unmarshal request",
+			Error: err,
+		})
+		c.JSON(http.StatusBadRequest, response.ErrorBody{
+			Code:    http.StatusBadRequest,
+			Status:  "fail",
+			Message: fmt.Sprintf("failed to unmarshal request: %v", err),
+		})
+		return
+	}
+
+	res, err := h.svc.ConfirmTx(ctx, req.TransactionID)
+	if err != nil {
+		var appErr *errs.Error
+		if errors.As(err, &appErr) {
+			c.JSON(appErr.Code, response.ErrorBody{
+				Code:    appErr.Code,
+				Status:  appErr.Status,
+				Message: appErr.Message,
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, response.ErrorBody{
+			Code:    http.StatusInternalServerError,
+			Status:  "error",
+			Message: "internal server error",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response.Confirm{
+		TransactionID: res.Transaction.ID,
+		UserID:        res.Transaction.UserID,
+		Amount:        res.Transaction.Amount,
+		Status:        string(res.Transaction.Status),
+		Balance:       res.Balance,
+	})
+}
