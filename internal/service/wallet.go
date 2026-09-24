@@ -1,12 +1,14 @@
 package service
 
 import (
+	"WalletTopUp/internal/domain/cache"
 	"WalletTopUp/internal/domain/entity"
 	errs "WalletTopUp/internal/domain/error"
 	"WalletTopUp/internal/domain/repository"
 	"WalletTopUp/internal/service/dto"
 	"WalletTopUp/pkg/lib"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 )
@@ -17,15 +19,17 @@ type walletSvc struct {
 	txRepo     repository.TxRepo
 	txManager  repository.TxManager
 	walletRepo repository.WalletRepo
+	txCache    cache.TransactionCache
 }
 
-func NewWalletSvc(logger lib.Logger, userRepo repository.UserRepo, txRepo repository.TxRepo, txManager repository.TxManager, walletRepo repository.WalletRepo) WalletSvc {
+func NewWalletSvc(logger lib.Logger, userRepo repository.UserRepo, txRepo repository.TxRepo, txManager repository.TxManager, walletRepo repository.WalletRepo, txCache cache.TransactionCache) WalletSvc {
 	return &walletSvc{
 		logger,
 		userRepo,
 		txRepo,
 		txManager,
 		walletRepo,
+		txCache,
 	}
 }
 
@@ -67,11 +71,32 @@ func (svc *walletSvc) VerifyTx(ctx context.Context, userId uint, amount float64,
 		return nil, err
 	}
 
+	if err := svc.txCache.Set(ctx, &tx); err != nil {
+		svc.logger.Warn(ctx, lib.Meta{
+			Event: event,
+			Msg:   fmt.Sprintf("failed to cache transaction for transaction_id: %s", tx.ID),
+			Error: err,
+		})
+	}
+
 	return createdTx, nil
 }
 
 func (svc *walletSvc) ConfirmTx(ctx context.Context, tx string) (*dto.ConfirmResult, error) {
 	event := "Confirm Transaction"
+	now := time.Now()
+
+	if cached, err := svc.txCache.Get(ctx, tx); err == nil {
+		if cached.IsExpired(now) {
+			return nil, errs.ErrTxExpired
+		}
+	} else if !errors.Is(err, errs.ErrCacheMiss) {
+		svc.logger.Warn(ctx, lib.Meta{
+			Event: event,
+			Msg:   fmt.Sprintf("failed to read transaction cache for transaction_id: %s", tx),
+			Error: err,
+		})
+	}
 
 	var (
 		result     *dto.ConfirmResult
@@ -88,7 +113,6 @@ func (svc *walletSvc) ConfirmTx(ctx context.Context, tx string) (*dto.ConfirmRes
 			return err
 		}
 
-		now := time.Now()
 		if tx.IsExpired(now) {
 			tx.Status = entity.TransactionStatusExpired
 			if err := tTxRepo.Update(ctx, *tx); err != nil {

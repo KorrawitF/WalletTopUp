@@ -54,7 +54,7 @@ func (l *logger) Error(ctx context.Context, meta Meta) {
 
 func (l *logger) Warn(ctx context.Context, meta Meta) {
 	ts := time.Now().Format(time.RFC3339Nano)
-	l.log.Printf(Yellow+"%s - [Warn] - Event: %s - Tid: %s - Message: %s\n"+Reset, ts, meta.Event, utils.GetTraceId(ctx), meta.Msg)
+	l.log.Printf(Yellow+"%s - [Warn] - Event: %s - Tid: %s - Message: %s, %v\n"+Reset, ts, meta.Event, utils.GetTraceId(ctx), meta.Msg, meta.Error)
 }
 
 func (l *logger) Debug(ctx context.Context, meta Meta) {

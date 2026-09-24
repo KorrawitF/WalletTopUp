@@ -1,6 +1,7 @@
 package errs
 
 import (
+	"errors"
 	"net/http"
 )
 
@@ -24,4 +25,6 @@ var (
 	ErrTxExpired      = &Error{Code: http.StatusBadRequest, Status: "fail", Message: "Transaction has been expired."}
 	ErrTxNotVerified  = &Error{Code: http.StatusBadRequest, Status: "fail", Message: "Transaction not verified."}
 	ErrWalletNotFound = &Error{Code: http.StatusBadRequest, Status: "fail", Message: "Wallet not found."}
+
+	ErrCacheMiss = errors.New("cache miss")
 )
