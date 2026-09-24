@@ -6,6 +6,7 @@ import (
 	"WalletTopUp/internal/domain/repository"
 	"WalletTopUp/pkg/lib"
 	"context"
+	"fmt"
 )
 
 type walletSvc struct {
@@ -36,6 +37,10 @@ func (svc *walletSvc) VerifyTx(ctx context.Context, userId uint, amount float64,
 	}
 
 	if !entity.PaymentMethod(method).IsValid() {
+		svc.logger.Error(ctx, lib.Meta{
+			Event: event,
+			Msg:   fmt.Sprintf("%s payment method not accepted.", method),
+		})
 		return nil, errs.ErrInvalidMethod
 	}
 
