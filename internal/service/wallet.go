@@ -71,7 +71,7 @@ func (svc *walletSvc) VerifyTx(ctx context.Context, userId uint, amount float64,
 		return nil, err
 	}
 
-	if err := svc.txCache.Set(ctx, &tx); err != nil {
+	if err := svc.txCache.Set(ctx, createdTx); err != nil {
 		svc.logger.Warn(ctx, lib.Meta{
 			Event: event,
 			Msg:   fmt.Sprintf("failed to cache transaction for transaction_id: %s", tx.ID),
@@ -82,18 +82,18 @@ func (svc *walletSvc) VerifyTx(ctx context.Context, userId uint, amount float64,
 	return createdTx, nil
 }
 
-func (svc *walletSvc) ConfirmTx(ctx context.Context, tx string) (*dto.ConfirmResult, error) {
+func (svc *walletSvc) ConfirmTx(ctx context.Context, txId string) (*dto.ConfirmResult, error) {
 	event := "Confirm Transaction"
 	now := time.Now()
 
-	if cached, err := svc.txCache.Get(ctx, tx); err == nil {
+	if cached, err := svc.txCache.Get(ctx, txId); err == nil {
 		if cached.IsExpired(now) {
 			return nil, errs.ErrTxExpired
 		}
 	} else if !errors.Is(err, errs.ErrCacheMiss) {
 		svc.logger.Warn(ctx, lib.Meta{
 			Event: event,
-			Msg:   fmt.Sprintf("failed to read transaction cache for transaction_id: %s", tx),
+			Msg:   fmt.Sprintf("failed to read transaction cache for transaction_id: %s", txId),
 			Error: err,
 		})
 	}
@@ -104,7 +104,7 @@ func (svc *walletSvc) ConfirmTx(ctx context.Context, tx string) (*dto.ConfirmRes
 	)
 	if err := svc.txManager.WithinTransaction(ctx, func(ctx context.Context) error {
 		tTxRepo := svc.txRepo.WithTx(svc.txManager.GetTx(ctx))
-		tx, err := tTxRepo.FindById(ctx, tx)
+		tx, err := tTxRepo.FindById(ctx, txId)
 		if err != nil {
 			return err
 		}
@@ -156,6 +156,13 @@ func (svc *walletSvc) ConfirmTx(ctx context.Context, tx string) (*dto.ConfirmRes
 		return nil, err
 	}
 
+	if err := svc.txCache.Delete(ctx, txId); err != nil {
+		svc.logger.Warn(ctx, lib.Meta{
+			Event: event,
+			Msg:   fmt.Sprintf("failed to evict transaction cache for transaction_id: %s", txId),
+			Error: err,
+		})
+	}
 	if expiredErr != nil {
 		return nil, expiredErr
 	}
