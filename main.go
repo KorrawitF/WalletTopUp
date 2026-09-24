@@ -2,6 +2,7 @@ package main
 
 import (
 	"WalletTopUp/internal/config"
+	"WalletTopUp/internal/infra/cache"
 	"WalletTopUp/internal/infra/database"
 	"WalletTopUp/internal/infra/database/repository"
 	httpiface "WalletTopUp/internal/interface/http"
@@ -37,13 +38,20 @@ func main() {
 		}
 	}
 
+	client := cache.Connect(context.Background(), conf.CacheClient)
+
 	// Dependencies injection.
 	txRepo := repository.NewTxRepo(logger, db)
 	userRepo := repository.NewUserRepo(logger, db)
 	txManager := repository.NewTxManager(db)
 	walletRepo := repository.NewWalletRepo(logger, db)
 
-	walletSvc := service.NewWalletSvc(logger, userRepo, txRepo, txManager, walletRepo)
+	txCache := cache.NewNoopTxCache()
+	if conf.CacheClient.Enabled {
+		txCache = cache.NewTxCache(client)
+	}
+
+	walletSvc := service.NewWalletSvc(logger, userRepo, txRepo, txManager, walletRepo, txCache)
 
 	handler := handler.NewWalletHandler(logger, walletSvc)
 
