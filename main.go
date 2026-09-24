@@ -31,15 +31,18 @@ func main() {
 
 	// Dependencies injection.
 	txRepo := repository.NewTxRepo(logger, db)
-	txSvc := service.NewTxSvc(logger, txRepo)
-	handler := handler.NewWalletHandler(logger, txSvc)
+	userRepo := repository.NewUserRepo(logger, db)
+
+	walletSvc := service.NewWalletSvc(logger, userRepo, txRepo)
+
+	handler := handler.NewWalletHandler(logger, walletSvc)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
 	// Init gin server.
 	gin.SetMode(conf.Server.Mode)
-	router := httpiface.NewRouter(logger, &handler)
+	router := httpiface.NewRouter(logger, handler)
 
 	srv := &http.Server{
 		Addr:              fmt.Sprintf("%s:%s", conf.Server.Host, conf.Server.Port),

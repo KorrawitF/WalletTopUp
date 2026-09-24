@@ -1,3 +1,7 @@
 package handler
 
-type WalletHandler interface{}
+import "github.com/gin-gonic/gin"
+
+type WalletHandler interface {
+	VerifyTx(c *gin.Context)
+}

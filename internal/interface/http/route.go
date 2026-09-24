@@ -12,5 +12,10 @@ func NewRouter(logger lib.Logger, handlers handler.WalletHandler) *gin.Engine {
 	r := gin.New()
 	r.Use(middleware.GetTraceId())
 
+	wallet := r.Group("/wallet")
+	{
+		wallet.POST("/verify", handlers.VerifyTx)
+	}
+
 	return r
 }
