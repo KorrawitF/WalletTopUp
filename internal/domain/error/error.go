@@ -1,8 +1,22 @@
 package errs
 
-import "errors"
+import (
+	"net/http"
+)
+
+type Error struct {
+	Code    int
+	Status  string
+	Message string
+}
+
+func (e *Error) Error() string {
+	return e.Message
+}
+
+var _ error = (*Error)(nil)
 
 var (
-	ErrInvalidMethod = errors.New("Invalid payment method.")
-	ErrUserNotFound  = errors.New("User not found.")
+	ErrInvalidMethod = &Error{Code: http.StatusBadRequest, Status: "fail", Message: "Invalid payment method."}
+	ErrUserNotFound  = &Error{Code: http.StatusBadRequest, Status: "fail", Message: "User not found."}
 )

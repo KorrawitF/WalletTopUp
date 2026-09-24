@@ -1,10 +1,12 @@
 package handler
 
 import (
+	errs "WalletTopUp/internal/domain/error"
 	"WalletTopUp/internal/interface/http/dto/request"
 	"WalletTopUp/internal/interface/http/dto/response"
 	"WalletTopUp/internal/service"
 	"WalletTopUp/pkg/lib"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -44,10 +46,19 @@ func (h *walletHandler) VerifyTx(c *gin.Context) {
 
 	tx, err := h.svc.VerifyTx(ctx, req.UserId, req.Amount, req.Method)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, response.ErrorBody{
-			Code:    http.StatusBadRequest,
-			Status:  "fail",
-			Message: fmt.Sprintf("failed to verify tx: %v", err),
+		var appErr *errs.Error
+		if errors.As(err, &appErr) {
+			c.JSON(appErr.Code, response.ErrorBody{
+				Code:    appErr.Code,
+				Status:  appErr.Status,
+				Message: appErr.Message,
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, response.ErrorBody{
+			Code:    http.StatusInternalServerError,
+			Status:  "error",
+			Message: "internal server error",
 		})
 		return
 	}

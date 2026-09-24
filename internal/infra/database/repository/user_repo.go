@@ -8,6 +8,7 @@ import (
 	"WalletTopUp/internal/infra/database/model"
 	"WalletTopUp/pkg/lib"
 	"context"
+	"errors"
 
 	"gorm.io/gorm"
 )
@@ -33,7 +34,7 @@ func (repo *userRepo) FindById(ctx context.Context, id uint) (*entity.User, erro
 	event := "Find User by ID"
 	var user model.User
 	if err := repo.db.WithContext(ctx).First(&user, "id = ?", id).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			err = errs.ErrUserNotFound
 		}
 		repo.logger.Error(ctx, lib.Meta{
