@@ -38,7 +38,6 @@ type Transaction struct {
 	CompletedAt   *time.Time
 }
 
-func (tx *Transaction) IsExpired() bool {
-	now := time.Now()
-	return !tx.ExpiresAt.Before(now)
+func (tx *Transaction) IsExpired(now time.Time) bool {
+	return !now.Before(tx.ExpiresAt)
 }

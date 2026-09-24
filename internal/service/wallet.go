@@ -88,7 +88,8 @@ func (svc *walletSvc) ConfirmTx(ctx context.Context, tx string) (*dto.ConfirmRes
 			return err
 		}
 
-		if tx.IsExpired() {
+		now := time.Now()
+		if tx.IsExpired(now) {
 			tx.Status = entity.TransactionStatusExpired
 			if err := tTxRepo.Update(ctx, *tx); err != nil {
 				svc.logger.Error(ctx, lib.Meta{
@@ -113,7 +114,6 @@ func (svc *walletSvc) ConfirmTx(ctx context.Context, tx string) (*dto.ConfirmRes
 			return err
 		}
 
-		now := time.Now()
 		tx.Status = entity.TransactionStatusCompleted
 		tx.CompletedAt = &now
 		if err := tTxRepo.Update(ctx, *tx); err != nil {
