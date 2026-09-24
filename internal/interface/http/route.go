@@ -15,6 +15,7 @@ func NewRouter(logger lib.Logger, handlers handler.WalletHandler) *gin.Engine {
 	wallet := r.Group("/wallet")
 	{
 		wallet.POST("/verify", handlers.VerifyTx)
+		wallet.POST("/confirm", handlers.ConfirmTx)
 	}
 
 	return r
