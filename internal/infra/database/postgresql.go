@@ -2,6 +2,7 @@ package database
 
 import (
 	"WalletTopUp/internal/config"
+	"WalletTopUp/internal/domain/entity"
 	"fmt"
 	"log"
 	"time"
@@ -19,7 +20,10 @@ func Connect(conf config.Database) *gorm.DB {
 	})
 	if err != nil {
 		log.Fatalf("failed to connect database: %v", err)
-		return nil
 	}
 	return db
+}
+
+func Migrate(db *gorm.DB) error {
+	return db.AutoMigrate(&entity.User{}, &entity.Wallet{}, &entity.Transaction{})
 }

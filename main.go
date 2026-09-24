@@ -10,6 +10,7 @@ import (
 	"WalletTopUp/pkg/lib"
 	"context"
 	"errors"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -22,12 +23,19 @@ import (
 )
 
 func main() {
+	var doMigrate string
+	flag.StringVar(&doMigrate, "db", "", "Execute auto migration on run.")
 	// Config load and Init logger.
 	conf := config.Load()
 
 	// Init infra engines.
 	logger := lib.NewLogger(conf, log.Default())
 	db := database.Connect(conf.Database)
+	if doMigrate == "migrate" {
+		if err := database.Migrate(db); err != nil {
+			log.Panicf("failed to migrate: %v", err)
+		}
+	}
 
 	// Dependencies injection.
 	txRepo := repository.NewTxRepo(logger, db)
