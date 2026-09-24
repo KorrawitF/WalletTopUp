@@ -1,0 +1,10 @@
+.git
+.gitignore
+.vscode
+.env
+.env.*
+!.env.example
+Dockerfile
+.dockerignore
+**/*_test.go
+**/mocks/

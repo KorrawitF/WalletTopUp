@@ -1,0 +1,27 @@
+issue-845-fix: True
+resolve-type-alias: False
+disable-version-string: True
+with-expecter: true
+dir: "{{.InterfaceDir}}/mocks"
+outpkg: mocks
+mockname: "Mock{{.InterfaceName}}"
+filename: "{{.InterfaceName | snakecase}}.go"
+packages:
+  WalletTopUp/internal/domain/repository:
+    interfaces:
+      UserRepo:
+      TxRepo:
+      WalletRepo:
+      TxManager:
+  WalletTopUp/internal/domain/cache:
+    interfaces:
+      TransactionCache:
+  WalletTopUp/internal/service:
+    interfaces:
+      WalletSvc:
+  WalletTopUp/internal/interface/http/handler:
+    interfaces:
+      WalletHandler:
+  WalletTopUp/pkg/lib:
+    interfaces:
+      Logger:
