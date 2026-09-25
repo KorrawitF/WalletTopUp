@@ -108,6 +108,23 @@ func main() {
 			Error: err,
 		})
 	}
+
+	if err := database.Close(db); err != nil {
+		logger.Warn(shutdownCtx, lib.Meta{
+			Event: event,
+			Msg:   "database shutdown ungracefully.",
+			Error: err,
+		})
+	}
+
+	if err := cache.Close(client); err != nil {
+		logger.Warn(shutdownCtx, lib.Meta{
+			Event: event,
+			Msg:   "memory db shutdown ungracefully.",
+			Error: err,
+		})
+	}
+
 	logger.Info(shutdownCtx, lib.Meta{
 		Event: event,
 		Msg:   "http server was shutdown gracefully",

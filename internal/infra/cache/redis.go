@@ -3,6 +3,7 @@ package cache
 import (
 	"WalletTopUp/internal/config"
 	"context"
+	"errors"
 	"fmt"
 	"log"
 
@@ -20,4 +21,12 @@ func Connect(ctx context.Context, conf config.CacheClient) *redis.Client {
 
 	log.Println("Redis connected.")
 	return client
+}
+
+func Close(client *redis.Client) error {
+	if client == nil {
+		return errors.New("MemDB didn't initialize.")
+	}
+
+	return client.Close()
 }

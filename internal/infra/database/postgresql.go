@@ -3,6 +3,7 @@ package database
 import (
 	"WalletTopUp/internal/config"
 	"WalletTopUp/internal/infra/database/model"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -26,4 +27,17 @@ func Connect(conf config.Database) *gorm.DB {
 
 func Migrate(db *gorm.DB) error {
 	return db.AutoMigrate(&model.User{}, &model.Wallet{}, &model.Transaction{})
+}
+
+func Close(db *gorm.DB) error {
+	if db == nil {
+		return errors.New("DB didn't initialize.")
+	}
+
+	sqlDB, err := db.DB()
+	if err != nil {
+		return err
+	}
+
+	return sqlDB.Close()
 }
